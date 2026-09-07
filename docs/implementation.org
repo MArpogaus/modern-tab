@@ -8,9 +8,8 @@ the main one; =modern-tab-bar.el= dresses the tab bar and
 The package is =modern-tab=, after that main file, and every symbol
 carries the same prefix: package-lint takes the prefix from the main
 file, elpaca reads the version and the dependency line from the file
-the id names, and both are that one file.  The repository is named
-=modern-tabs= because it holds the two rows of tabs Emacs has; a
-recipe names the two separately, so the difference costs nothing.
+the id names, and both are that one file.  The repository carries the
+same name, so a recipe needs no =:repo= that differs from its id.
 
 There is no entry file.  Both modes are autoloaded, so a reader who
 installs the package can name them in a hook without requiring
