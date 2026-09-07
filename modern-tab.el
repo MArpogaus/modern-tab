@@ -1,4 +1,4 @@
-;;; modern-tab.el --- The common part of modern-tabs -*- lexical-binding: t; -*-
+;;; modern-tab.el --- The common part of the two tab modes -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2026 Marcel Arpogaus
 
@@ -7,7 +7,7 @@
 ;; Version: 1.0
 ;; Package-Requires: ((emacs "29.1"))
 ;; Keywords: convenience, tabs
-;; URL: https://github.com/MArpogaus/modern-tabs
+;; URL: https://github.com/MArpogaus/modern-tab
 
 ;; This file is not part of GNU Emacs.
 
@@ -48,13 +48,12 @@
 ;; `modern-tab-line-mode' both live under `modern-tab-'.  It carries
 ;; the version and the dependency line for the same reason, and elpaca
 ;; reads them here too, because the id it is installed by is the name
-;; of this file.  The repository is `modern-tabs', after the two rows
-;; of tabs Emacs has; a recipe names package and repository apart.
+;; of this file, and so is the repository.
 ;;
 ;; Both modes are autoloaded, so nothing here needs requiring:
 ;;
 ;;   (use-package modern-tab
-;;     :vc (:url "https://github.com/MArpogaus/modern-tabs" :rev :newest)
+;;     :vc (:url "https://github.com/MArpogaus/modern-tab" :rev :newest)
 ;;     :hook ((after-init . modern-tab-bar-mode)
 ;;            (after-init . modern-tab-line-mode)))
 ;;
