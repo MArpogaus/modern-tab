@@ -1,12 +1,12 @@
 # Inspired by: https://github.com/othneildrew/Best-README-Template
 #+OPTIONS: toc:nil
 
-[[https://github.com/MArpogaus/modern-tabs/graphs/contributors][https://img.shields.io/github/contributors/MArpogaus/modern-tabs.svg?style=flat-square]]
-[[https://github.com/MArpogaus/modern-tabs/network/members][https://img.shields.io/github/forks/MArpogaus/modern-tabs.svg?style=flat-square]]
-[[https://github.com/MArpogaus/modern-tabs/stargazers][https://img.shields.io/github/stars/MArpogaus/modern-tabs.svg?style=flat-square]]
-[[https://github.com/MArpogaus/modern-tabs/issues][https://img.shields.io/github/issues/MArpogaus/modern-tabs.svg?style=flat-square]]
-[[https://github.com/MArpogaus/modern-tabs/blob/main/COPYING][https://img.shields.io/github/license/MArpogaus/modern-tabs.svg?style=flat-square]]
-[[https://github.com/MArpogaus/modern-tabs/actions/workflows/test.yml][https://img.shields.io/github/actions/workflow/status/MArpogaus/modern-tabs/test.yml.svg?branch=main&label=tests&style=flat-square]]
+[[https://github.com/MArpogaus/modern-tab/graphs/contributors][https://img.shields.io/github/contributors/MArpogaus/modern-tab.svg?style=flat-square]]
+[[https://github.com/MArpogaus/modern-tab/network/members][https://img.shields.io/github/forks/MArpogaus/modern-tab.svg?style=flat-square]]
+[[https://github.com/MArpogaus/modern-tab/stargazers][https://img.shields.io/github/stars/MArpogaus/modern-tab.svg?style=flat-square]]
+[[https://github.com/MArpogaus/modern-tab/issues][https://img.shields.io/github/issues/MArpogaus/modern-tab.svg?style=flat-square]]
+[[https://github.com/MArpogaus/modern-tab/blob/main/COPYING][https://img.shields.io/github/license/MArpogaus/modern-tab.svg?style=flat-square]]
+[[https://github.com/MArpogaus/modern-tab/actions/workflows/test.yml][https://img.shields.io/github/actions/workflow/status/MArpogaus/modern-tab/test.yml.svg?branch=main&label=tests&style=flat-square]]
 [[https://linkedin.com/in/MArpogaus][https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555]]
 
 * Modern Tabs :TOC_3_gh:noexport:
@@ -79,13 +79,12 @@ optional: install it for the glyphs, or name plain strings in the icon
 options.
 
 The package is =modern-tab=, after its main file, and every symbol
-carries that name as its prefix.  The repository is =modern-tabs=,
-because it holds the two rows of tabs Emacs has.  Both modes are
-autoloaded, so nothing needs requiring:
+carries that name as its prefix; so does the repository.  Both modes
+are autoloaded, so nothing needs requiring:
 
 #+begin_src emacs-lisp
   (use-package modern-tab
-    :vc (:url "https://github.com/MArpogaus/modern-tabs" :rev :newest)
+    :vc (:url "https://github.com/MArpogaus/modern-tab" :rev :newest)
     :hook ((after-init . modern-tab-bar-mode)
            (after-init . modern-tab-line-mode)))
 #+end_src
@@ -224,7 +223,7 @@ second reading the package as a MELPA reviewer would.  See
 ** Contributions
 
 Contributions are greatly appreciated!  Feel free to check the
-[[https://github.com/MArpogaus/modern-tabs/issues][issues page]] or submit a [[https://github.com/MArpogaus/modern-tabs/pulls][pull request]].
+[[https://github.com/MArpogaus/modern-tab/issues][issues page]] or submit a [[https://github.com/MArpogaus/modern-tab/pulls][pull request]].
 
 ** License
 
@@ -234,4 +233,4 @@ Distributed under the [[file:COPYING][GPLv3]] License.
 
 [[https://github.com/MArpogaus/][Marcel Arpogaus]] - [[mailto:znepry.necbtnhf@tznvy.pbz][znepry.necbtnhf@tznvy.pbz]] (encrypted with [[https://rot13.com/][ROT13]])
 
-Project Link: [[https://github.com/MArpogaus/modern-tabs][https://github.com/MArpogaus/modern-tabs]]
+Project Link: [[https://github.com/MArpogaus/modern-tab][https://github.com/MArpogaus/modern-tab]]

@@ -5,7 +5,7 @@
 ;; Author: Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 ;; Assisted-by: Claude:claude-opus-5
 ;; Keywords: convenience, tabs
-;; URL: https://github.com/MArpogaus/modern-tabs
+;; URL: https://github.com/MArpogaus/modern-tab
 
 ;; This file is not part of GNU Emacs.
 
