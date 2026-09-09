@@ -33,6 +33,14 @@ selected tab, a width and a colour for the others.  The two modes name
 them the same way, so a reader who has set one knows how to set the
 other.
 
+The tabs themselves are one row and not a row of buttons.  A tab that
+is not the selected one takes the background of the bar, a muted
+foreground and no weight of its own: =shadow= in front of the theme's
+own tab face mutes the text, =tab-bar= behind it gives the row its one
+background, and the selected tab alone is bold.  Left to the theme,
+=tab-bar-tab-inactive= carries a background of its own and every tab
+reads as a button.
+
 * Icons, and what a frame can draw
 
 =modern-tab-glyph= takes candidates, best first.  A graphic frame
