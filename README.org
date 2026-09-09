@@ -129,8 +129,8 @@ the same names, with =modern-tab-bar-= or =modern-tab-line-= in front.
 | =modern-tab-bar-active-indicator-color=     | ~mode-line-emphasis~ |
 | =modern-tab-bar-inactive-indicator-color=   | ~shadow~             |
 | =modern-tab-bar-indicator-height=           | ~25~, in pixels      |
-| =modern-tab-line-active-indicator-width=    | ~3~, in pixels       |
-| =modern-tab-line-inactive-indicator-width=  | ~0~, in pixels       |
+| =modern-tab-line-active-indicator-width=    | ~2~, in pixels       |
+| =modern-tab-line-inactive-indicator-width=  | ~1~, in pixels       |
 | =modern-tab-line-active-indicator-color=    | ~mode-line-emphasis~ |
 | =modern-tab-line-inactive-indicator-color=  | ~shadow~             |
 | =modern-tab-line-indicator-height=          | ~20~, in pixels      |

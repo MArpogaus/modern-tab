@@ -47,12 +47,12 @@
   "Height of the bar beside a tab, in pixels."
   :type 'natnum)
 
-(defcustom modern-tab-line-active-indicator-width 3
+(defcustom modern-tab-line-active-indicator-width 2
   "Width of the bar beside the selected tab, in pixels.
 Nil or zero draws no bar at all."
   :type '(choice natnum (const :tag "None" nil)))
 
-(defcustom modern-tab-line-inactive-indicator-width 0
+(defcustom modern-tab-line-inactive-indicator-width 1
   "Width of the bar beside a tab that is not selected, in pixels.
 Nil or zero draws no bar at all."
   :type '(choice natnum (const :tag "None" nil)))

@@ -303,8 +303,22 @@ This is what `tab-bar-tab-name-format-function' is set to."
      ;; here drew every tab in the selected tab's colours.
      ;; No `mouse-face' here: `tab-bar-tab-highlight' painted a cyan
      ;; block under the pointer that the modern look does not want.
-     'face (list :inherit (funcall tab-bar-tab-face-function tab)
-                 :weight (if selected 'bold 'normal)))))
+     ;;
+     ;; A tab that is not the selected one is the same row, quieter: the
+     ;; background of the bar, a muted foreground and no weight of its
+     ;; own.  `tab-bar-tab-inactive' carries a background of its own in
+     ;; most themes, and a row of tabs each in its own shade reads as a
+     ;; row of buttons rather than as one bar; `shadow' first in the
+     ;; list is what mutes the text, and `tab-bar' behind it is what
+     ;; gives the row's own background back.
+     'face (if selected
+               (list :inherit (funcall tab-bar-tab-face-function tab)
+                     :weight 'bold)
+             (list :inherit (list 'shadow
+                                  (funcall tab-bar-tab-face-function tab)
+                                  'tab-bar)
+                   :background (face-attribute 'tab-bar :background nil t)
+                   :weight 'normal)))))
 
 ;;;; The mode
 

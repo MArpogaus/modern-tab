@@ -372,15 +372,28 @@ Stock Emacs does not, but the hook is public and a reader who replaces
 (ert-deftest modern-tab-bar-test-a-tab-wears-the-face-the-tab-bar-chose ()
   "The face comes from `tab-bar-tab-face-function', not from a name here.
 Naming `tab-bar-tab' drew every tab in the selected tab's colours, and
-`tab-bar-tab-inactive' never rendered at all."
+`tab-bar-tab-inactive' never rendered at all.
+
+A tab that is not selected is that face, quieter: `shadow' in front of
+it for the text and the bar's own background behind it, because a row
+of tabs each in the background of `tab-bar-tab-inactive' reads as a row
+of buttons rather than as one bar."
   (let* ((tab-bar-close-button-show nil)
          (calls 0)
          (tab-bar-tab-face-function
           (lambda (_tab) (setq calls (1+ calls)) 'my-face)))
-    (should (equal (get-text-property
-                    0 'face (modern-tab-bar-name-format '(tab (name . "x")) 1))
-                   '(:inherit my-face :weight normal)))
-    (should (= calls 1))))
+    (let ((face (get-text-property
+                 0 'face (modern-tab-bar-name-format '(tab (name . "x")) 1))))
+      (should (equal (plist-get face :weight) 'normal))
+      (should (equal (plist-get face :inherit) '(shadow my-face tab-bar)))
+      (should (equal (plist-get face :background)
+                     (face-attribute 'tab-bar :background nil t))))
+    (should (= calls 1))
+    ;; the selected one keeps the face it is given, and its weight
+    (let ((face (get-text-property
+                 0 'face (modern-tab-bar-name-format
+                          '(current-tab (name . "x")) 1))))
+      (should (equal face '(:inherit my-face :weight bold))))))
 
 (ert-deftest modern-tab-test-the-icon-table-tells-the-rows-apart ()
   "A tab group and a buffer of the same name do not share an icon.
