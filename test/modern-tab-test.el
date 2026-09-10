@@ -370,30 +370,21 @@ Stock Emacs does not, but the hook is public and a reader who replaces
   (should (stringp (modern-tab-bar--group-icon ""))))
 
 (ert-deftest modern-tab-bar-test-a-tab-wears-the-face-the-tab-bar-chose ()
-  "The face comes from `tab-bar-tab-face-function', not from a name here.
-Naming `tab-bar-tab' drew every tab in the selected tab's colours, and
-`tab-bar-tab-inactive' never rendered at all.
-
-A tab that is not selected is that face, quieter: `shadow' in front of
-it for the text and the bar's own background behind it, because a row
-of tabs each in the background of `tab-bar-tab-inactive' reads as a row
-of buttons rather than as one bar."
+  "Every tab wears `tab-bar-tab', and the weight says which is current.
+The row is one bar: `tab-bar-tab-inactive' has a background of its own
+in most themes, and a tab in its own shade reads as a button.  The
+face `tab-bar-tab-face-function' answers with stands behind
+`tab-bar-tab', for whatever that face leaves open."
   (let* ((tab-bar-close-button-show nil)
          (calls 0)
          (tab-bar-tab-face-function
           (lambda (_tab) (setq calls (1+ calls)) 'my-face)))
-    (let ((face (get-text-property
-                 0 'face (modern-tab-bar-name-format '(tab (name . "x")) 1))))
-      (should (equal (plist-get face :weight) 'normal))
-      (should (equal (plist-get face :inherit) '(shadow my-face tab-bar)))
-      (should (equal (plist-get face :background)
-                     (face-attribute 'tab-bar :background nil t))))
-    (should (= calls 1))
-    ;; the selected one keeps the face it is given, and its weight
-    (let ((face (get-text-property
-                 0 'face (modern-tab-bar-name-format
-                          '(current-tab (name . "x")) 1))))
-      (should (equal face '(:inherit my-face :weight bold))))))
+    (dolist (case '((tab . normal) (current-tab . bold)))
+      (should (equal (get-text-property
+                      0 'face (modern-tab-bar-name-format
+                               (list (car case) '(name . "x")) 1))
+                     `(:inherit (tab-bar-tab my-face) :weight ,(cdr case)))))
+    (should (= calls 2))))
 
 (ert-deftest modern-tab-test-the-icon-table-tells-the-rows-apart ()
   "A tab group and a buffer of the same name do not share an icon.
