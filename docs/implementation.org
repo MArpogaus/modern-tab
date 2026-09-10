@@ -42,6 +42,12 @@ and each tab reads as a button of its own shade.  What
 =tab-bar-tab-face-function= answers with stands behind =tab-bar-tab=,
 for whatever that face leaves open.
 
+The tab line is dressed the same way, in
+=modern-tab-line-tab-format=: the name the row formats gets
+=tab-line-tab= in front of the face it was given, and the weight says
+which buffer the window shows.  =tab-line-tab-inactive= splits that
+row in a theme just as =tab-bar-tab-inactive= splits the other one.
+
 * Icons, and what a frame can draw
 
 =modern-tab-glyph= takes candidates, best first.  A graphic frame

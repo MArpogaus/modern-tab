@@ -161,16 +161,28 @@ survived, which is why this only showed in a terminal.
 
 `tab-line-close-button' is bound here rather than set at enable, so
 that the row of every frame gets the glyph that frame can draw.  See
-`modern-tab-line-close-button'."
-  (let ((selected (eq (modern-tab-line--buffer tab) (window-buffer)))
-        (tab-line-close-button (modern-tab-line-close-button)))
+`modern-tab-line-close-button'.
+
+The name wears `tab-line-tab' whichever tab it is, and the weight
+alone says which one the window shows, as the tab bar does it: left to
+the theme, `tab-line-tab-inactive' brings a background and a
+foreground of its own and each tab reads as a button of its own shade.
+The face the row chose stands behind it, for whatever `tab-line-tab'
+leaves open."
+  (let* ((selected (eq (modern-tab-line--buffer tab) (window-buffer)))
+         (tab-line-close-button (modern-tab-line-close-button))
+         (name (copy-sequence (tab-line-tab-name-format-default tab tabs))))
+    (add-face-text-property 0 (length name)
+                            (list :inherit 'tab-line-tab
+                                  :weight (if selected 'bold 'normal))
+                            nil name)
     (concat (modern-tab-indicator
              modern-tab-line-indicator-height
              (if selected modern-tab-line-active-indicator-width
                modern-tab-line-inactive-indicator-width)
              (if selected modern-tab-line-active-indicator-color
                modern-tab-line-inactive-indicator-color))
-            (tab-line-tab-name-format-default tab tabs))))
+            name)))
 
 ;;;; Closing a tab
 
