@@ -133,11 +133,16 @@ Every one of them leads with a codicon — the block from EA60 to EC84 —
 because a nerd glyph of another family is drawn at another weight: the
 material design chevron is bold beside the codicon plus, and the
 octicon cross is half its size.  The close button of the two rows is
-the same glyph, with the padding each row needs."
+the same glyph, with the padding each row needs.
+
+The mark on the selected tab is not one of them: it is no button and
+stands beside a name rather than in the row of buttons, and it is
+chosen for the ink it puts there — the octicon triangle covers 9.3
+pixels against the codicon triangle's 24.2, measured in a graphic
+frame."
   (dolist (glyphs (list modern-tab-bar-new-glyphs
                         modern-tab-bar-close-glyphs
                         modern-tab-bar-menu-glyphs
-                        modern-tab-bar-current-glyphs
                         modern-tab-line-close-glyphs))
     (should (<= #xEA60 (modern-tab-test--glyph glyphs) #xEC84)))
   (should (= (modern-tab-test--glyph modern-tab-bar-close-glyphs)

@@ -119,11 +119,15 @@ encode that is no private use glyph, so keep a plain string last."
   :type '(repeat string)
   :set #'modern-tab-set-and-forget)
 
-(defcustom modern-tab-bar-current-glyphs '(" " "› " "  ")
+(defcustom modern-tab-bar-current-glyphs '(" " "▸ " "  ")
   "Glyphs that mark the selected tab, best first.
 A graphic frame shows the first one; a terminal takes the first it can
 encode that is no private use glyph.  The last resort here is two
-spaces, as wide as the glyphs before them."
+spaces, as wide as the glyphs before them.
+
+A filled triangle, and a plain one of the same size behind it for a
+terminal: the chevron that stood here read as punctuation between
+two tab names rather than as the mark on one of them."
   :type '(repeat string)
   :set #'modern-tab-set-and-forget)
 
