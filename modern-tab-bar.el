@@ -297,28 +297,21 @@ This is what `tab-bar-tab-name-format-function' is set to."
              (if (memq tab-bar-close-button-show
                        (if selected '(t selected) '(t non-selected)))
                  (modern-tab-bar-close-button) " "))
-     ;; The face the tab bar itself would use, which is where
-     ;; `tab-bar-tab-inactive', `tab-bar-tab-ungrouped' and a reader's
-     ;; own `tab-bar-tab-face-function' live.  Naming `tab-bar-tab'
-     ;; here drew every tab in the selected tab's colours.
+     ;; One row, one face: every tab wears `tab-bar-tab' and the weight
+     ;; alone says which one is current.  `tab-bar-tab-inactive' carries
+     ;; a colour and a background of its own in most themes — under
+     ;; doom-one-light, #c6c7c7 on #f0f0f0, which is a name barely
+     ;; there — and a row of tabs each in its own shade reads as a row
+     ;; of buttons rather than as one bar.
+     ;;
+     ;; What the tab bar chose stands behind it, for whatever
+     ;; `tab-bar-tab' leaves open: that is where a reader's own
+     ;; `tab-bar-tab-face-function' and `tab-bar-tab-ungrouped' live.
      ;; No `mouse-face' here: `tab-bar-tab-highlight' painted a cyan
      ;; block under the pointer that the modern look does not want.
-     ;;
-     ;; A tab that is not the selected one is the same row, quieter: the
-     ;; background of the bar, a muted foreground and no weight of its
-     ;; own.  `tab-bar-tab-inactive' carries a background of its own in
-     ;; most themes, and a row of tabs each in its own shade reads as a
-     ;; row of buttons rather than as one bar; `shadow' first in the
-     ;; list is what mutes the text, and `tab-bar' behind it is what
-     ;; gives the row's own background back.
-     'face (if selected
-               (list :inherit (funcall tab-bar-tab-face-function tab)
-                     :weight 'bold)
-             (list :inherit (list 'shadow
-                                  (funcall tab-bar-tab-face-function tab)
-                                  'tab-bar)
-                   :background (face-attribute 'tab-bar :background nil t)
-                   :weight 'normal)))))
+     'face (list :inherit (list 'tab-bar-tab
+                                (funcall tab-bar-tab-face-function tab))
+                 :weight (if selected 'bold 'normal)))))
 
 ;;;; The mode
 
