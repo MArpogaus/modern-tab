@@ -157,15 +157,28 @@ frame."
                      (car (last modern-tab-bar-current-glyphs)))))
 
 (ert-deftest modern-tab-test-a-button-is-resolved-once-and-kept ()
-  "`modern-tab--button' picks a candidate for this display and keeps it."
+  "`modern-tab--button' picks a candidate for this display and keeps it.
+The candidates are the key, so another list is another answer and no
+option has to be forgotten for a reader to see the glyph they set."
   (skip-unless (not (display-graphic-p)))
   (modern-tab-forget)
   ;; The nerd candidate is a private use glyph, which a terminal refuses.
-  (should (equal (modern-tab--button 'a-button '("\uEA76 " "x ")) "x "))
-  ;; Kept: the candidates of the second call are not looked at.
-  (should (equal (modern-tab--button 'a-button '("!")) "x "))
+  (should (equal (modern-tab--button '("\uEA76 " "x ")) "x "))
+  ;; Kept, under the candidates it was asked about.
+  (should (gethash (modern-tab--key '("\uEA76 " "x ")) modern-tab--icons))
+  (should (equal (modern-tab--button '("\uEA76 " "x ")) "x "))
+  ;; Another list of candidates answers for itself.
+  (should (equal (modern-tab--button '("!")) "!")))
+
+(ert-deftest modern-tab-test-a-terminal-that-carries-the-icons-says-so ()
+  "The answer follows `modern-tab-terminal-glyphs' with nothing forgotten.
+The option is part of the key the answer is kept under."
+  (skip-unless (not (display-graphic-p)))
   (modern-tab-forget)
-  (should (equal (modern-tab--button 'a-button '("!")) "!")))
+  (let ((modern-tab-terminal-glyphs nil))
+    (should (equal (modern-tab--button '("\uEA76 " "x ")) "x ")))
+  (let ((modern-tab-terminal-glyphs t))
+    (should (equal (modern-tab--button '("\uEA76 " "x ")) "\uEA76 "))))
 
 (ert-deftest modern-tab-test-an-icon-spec-is-a-string-or-a-plist ()
   "A string stands for itself, nil is nothing, a plist names a nerd icon."
@@ -176,13 +189,19 @@ frame."
   (should (equal (modern-tab-icon '(:style "oct" :icon "dot_fill")) "?")))
 
 (ert-deftest modern-tab-test-an-icon-is-answered-once-per-display ()
-  "The answer is kept, and forgetting it asks again."
+  "The answer is kept under the spec, and a lookup runs once.
+A spec that is a function is what a caller with an expensive lookup
+passes; it is called for the first answer and not again."
   (modern-tab-forget)
-  (should (equal (modern-tab-icon-for "a group" "*") "*"))
-  ;; The spec of the second call is ignored: the answer is the one kept.
-  (should (equal (modern-tab-icon-for "a group" "!") "*"))
-  (modern-tab-forget)
-  (should (equal (modern-tab-icon-for "a group" "!") "!")))
+  (let ((calls 0))
+    (should (equal (modern-tab-icon-for "*") "*"))
+    (should (equal (modern-tab-icon-for
+                    (lambda () (setq calls (1+ calls)) "!"))
+                   "!"))
+    (should (= calls 1))
+    ;; Kept: the same spec does not run the lookup again.
+    (should (equal (modern-tab-icon-for "*") "*"))
+    (should (= calls 1))))
 
 (ert-deftest modern-tab-test-forgetting-an-icon-clears-the-row-drawn ()
   "A row of the tab line already drawn is kept in a window parameter.
@@ -193,12 +212,18 @@ the change."
   (modern-tab-forget)
   (should-not (window-parameter nil 'tab-line-cache)))
 
-(ert-deftest modern-tab-test-setting-an-option-forgets-the-icons ()
-  "An option an icon depends on empties the table when it is set."
-  (modern-tab-icon-for "a group" "*")
-  (modern-tab-set-and-forget 'modern-tab-bar-default-icon "+")
-  (should (equal (modern-tab-icon-for "a group" "!") "!"))
-  (setq modern-tab-bar-default-icon '(:style "oct" :icon "dot_fill")))
+(ert-deftest modern-tab-test-a-changed-option-needs-no-forgetting ()
+  "A new value is a new spec, and a new spec has no answer yet.
+The table was keyed by a name of the caller's choosing before, so an
+option that changed under it kept the icon of the value before."
+  (modern-tab-forget)
+  (should (equal (modern-tab-bar--group-icon "a group")
+                 (modern-tab-icon modern-tab-bar-default-icon)))
+  (let ((modern-tab-bar-default-icon "+"))
+    (should (equal (modern-tab-bar--group-icon "a group") "+")))
+  ;; And the answer for the value before is still there, unasked.
+  (should (equal (modern-tab-bar--group-icon "a group")
+                 (modern-tab-icon modern-tab-bar-default-icon))))
 
 ;;;; The tab bar
 
@@ -393,10 +418,15 @@ face `tab-bar-tab-face-function' answers with stands behind
 
 (ert-deftest modern-tab-test-the-icon-table-tells-the-rows-apart ()
   "A tab group and a buffer of the same name do not share an icon.
-One table serves both rows, so the key says which row asked."
+One table serves both rows: the tab bar keys the answer by the spec it
+resolved and the tab line by the name it looked up, and the two shapes
+of key cannot meet."
   (modern-tab-forget)
-  (should (equal (modern-tab-icon-for (cons 'group "same") "G") "G"))
-  (should (equal (modern-tab-icon-for (cons 'buffer "same") "B") "B")))
+  (let ((modern-tab-bar-icons '(("same" . "G"))))
+    (should (equal (modern-tab-bar--group-icon "same") "G")))
+  (cl-letf (((symbol-function 'nerd-icons-icon-for-file) (lambda (&rest _) "B")))
+    (should (equal (modern-tab-line-file-icon (get-buffer-create "same"))
+                   "B"))))
 
 ;;;; The tab line
 

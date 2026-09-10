@@ -72,15 +72,28 @@ stay distinct from button to button, because a terminal takes the last
 of them.
 
 Finding a nerd icon walks the table of its style — 6880 entries for the
-material design one — so an answer is kept per key and per kind of
-display.  A terminal and a graphic frame answer differently and one
-session can hold both, which is why the kind of display is part of the
-key.  Every glyph is chosen at draw time and none at enable time: a
-daemon enables its modes with no frame at all, and one session can hold
-a terminal frame and a graphic frame together.  The table is emptied
-when a font arrives (=after-setting-font-hook=) and when an option an
-icon depends on is set; emptying it also clears the =tab-line-cache=
-parameter of every window, which is where a row already drawn is kept.
+material design one — so an answer is kept.  =modern-tab--key= says
+what it is kept under: the spec itself, the kind of display, and
+=modern-tab-terminal-glyphs=.  Those last two are what the spec does
+not say and the answer turns on; a terminal and a graphic frame answer
+differently and one session can hold both.  Every glyph is chosen at
+draw time and none at enable time: a daemon enables its modes with no
+frame at all.
+
+Keying by the spec is what makes a changed option right without
+anything being emptied — a new value is a question with no answer yet.
+The table was keyed by a name each caller chose before, which meant a
+caller had to empty the table when its spec changed, and it cost a
+closure per call to keep the lookup out of a hit: measured, a button
+went from 2.0 µs a call to 0.5 in a graphic frame and from 2.0 to 0.46
+in a terminal, where walking the candidates afresh costs 11.
+
+=modern-tab-forget= empties the table all the same, and it is what a
+font arriving (=after-setting-font-hook=) and an option being set run.
+The emptying is no longer what makes them right; the redraw is.  It
+also clears the =tab-line-cache= parameter of every window, which is
+where a row already drawn is kept, under a key that says nothing about
+the options of this package.
 
 * What a mode gives back
 
