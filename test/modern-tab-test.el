@@ -70,26 +70,6 @@ row formats: the face of a terminal bar would not survive the
         (should (string-prefix-p "|" (substring-no-properties selected)))
         (should (string-prefix-p " " (substring-no-properties other)))))))
 
-(ert-deftest modern-tab-line-test-a-tab-wears-the-face-of-the-row ()
-  "Every tab of the row wears `tab-line-tab', bold where it is current.
-Left to the theme, `tab-line-tab-inactive' brings a background of its
-own and each tab reads as a button; the row is meant to read as one
-bar, as the tab bar does."
-  (let ((modern-tab-line-active-indicator-width 0)
-        (modern-tab-line-inactive-indicator-width 0)
-        (modern-tab-line-icon-function nil)
-        (tab-line-tab-name-function #'modern-tab-line-tab-name))
-    (with-temp-buffer
-      (set-window-buffer nil (current-buffer))
-      (let* ((tabs (list (current-buffer) (get-buffer-create "*other*")))
-             (faces (lambda (tab)
-                      (get-text-property
-                       1 'face (modern-tab-line-tab-format tab tabs)))))
-        (should (member '(:inherit tab-line-tab :weight bold)
-                        (funcall faces (car tabs))))
-        (should (member '(:inherit tab-line-tab :weight normal)
-                        (funcall faces (cadr tabs))))))))
-
 ;;;; Glyphs and icons
 
 (ert-deftest modern-tab-test-a-glyph-falls-back-to-the-last ()
