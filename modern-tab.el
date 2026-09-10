@@ -250,13 +250,18 @@ nerd-icons-corfu."
 
 (defun modern-tab-icon (spec)
   "Return SPEC as the string that shows on a tab.
-A string stands for itself, a plist names a nerd icon, a function is
-called for one, and nil is nothing.  The function is what a caller
-whose lookup is expensive passes, so that `modern-tab-icon-for' can
-leave it uncalled where it already has the answer."
+A string stands for itself, a list of strings is candidates for
+`modern-tab-glyph', a plist names a nerd icon, a function is called
+for one, and nil is nothing.  The function is what a caller whose
+lookup is expensive passes, so that `modern-tab-icon-for' can leave it
+uncalled where it already has the answer.
+
+The shapes cannot be mistaken for one another: a plist opens with a
+keyword and candidates open with a string."
   (cond ((null spec) "")
         ((stringp spec) spec)
         ((functionp spec) (funcall spec))
+        ((and (consp spec) (stringp (car spec))) (apply #'modern-tab-glyph spec))
         (t (modern-tab--nerd-icon spec))))
 
 (defun modern-tab-icon-for (spec)
@@ -273,13 +278,10 @@ question that has no answer yet and gets a fresh one."
 
 (defun modern-tab--button (glyphs)
   "Return the best of GLYPHS this display draws, and keep the answer.
-GLYPHS is a list of candidates as `modern-tab-glyph' takes them, and
-the list is the key: another list of candidates is another question.
-Every button of both rows is drawn through here.  The candidates are
-strings and a spec of `modern-tab-icon-for' is a string, a plist or a
-function, so the two share the table without meeting in it."
-  (with-memoization (gethash (modern-tab--key glyphs) modern-tab--icons)
-    (apply #'modern-tab-glyph glyphs)))
+GLYPHS is a list of candidates as `modern-tab-glyph' takes them, which
+is one of the shapes `modern-tab-icon' reads: every button of both
+rows is one call of `modern-tab-icon-for', kept under its candidates."
+  (modern-tab-icon-for glyphs))
 
 ;;;; What a mode borrows and gives back
 
