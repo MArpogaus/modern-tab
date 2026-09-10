@@ -74,9 +74,8 @@ Nil shows no icon at all."
   :set #'modern-tab-set-and-forget)
 
 (defcustom modern-tab-line-close-glyphs '(" " "✕ " "× " "x ")
-  "Glyphs of the close button, best first.
-A graphic frame shows the first one; a terminal takes the first it can
-encode that is no private use glyph, so keep a plain character last."
+  "Glyphs of the close button.
+The candidates `modern-tab-glyph' chooses from, best first."
   :type '(repeat string)
   :set #'modern-tab-set-and-forget)
 

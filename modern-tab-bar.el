@@ -98,32 +98,28 @@ goes onto the tab bar.  Nil shows the name as it is."
   :type 'function)
 
 (defcustom modern-tab-bar-new-glyphs '("  " " + ")
-  "Glyphs of the button that makes a tab, best first.
-A graphic frame shows the first one; a terminal takes the first it can
-encode that is no private use glyph, so keep a plain string last."
+  "Glyphs of the button that makes a tab.
+The candidates `modern-tab-glyph' chooses from, best first."
   :type '(repeat string)
   :set #'modern-tab-set-and-forget)
 
 (defcustom modern-tab-bar-close-glyphs
   '("  " " ✕ " " × " " x ")
-  "Glyphs of the close button, best first.
-A graphic frame shows the first one; a terminal takes the first it can
-encode that is no private use glyph, so keep a plain character last."
+  "Glyphs of the close button.
+The candidates `modern-tab-glyph' chooses from, best first."
   :type '(repeat string)
   :set #'modern-tab-set-and-forget)
 
 (defcustom modern-tab-bar-menu-glyphs '(" " "≡ " " Menu ")
-  "Glyphs of the menu button, best first.
-A graphic frame shows the first one; a terminal takes the first it can
-encode that is no private use glyph, so keep a plain string last."
+  "Glyphs of the menu button.
+The candidates `modern-tab-glyph' chooses from, best first."
   :type '(repeat string)
   :set #'modern-tab-set-and-forget)
 
 (defcustom modern-tab-bar-current-glyphs '(" " "▸ " "  ")
-  "Glyphs that mark the selected tab, best first.
-A graphic frame shows the first one; a terminal takes the first it can
-encode that is no private use glyph.  The last resort here is two
-spaces, as wide as the glyphs before them.
+  "Glyphs that mark the selected tab.
+The candidates `modern-tab-glyph' chooses from, best first.  The last
+resort here is two spaces, as wide as the glyphs before them.
 
 A filled triangle, and a plain one of the same size behind it for a
 terminal: the chevron that stood here read as punctuation between
