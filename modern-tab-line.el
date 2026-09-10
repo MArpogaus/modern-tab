@@ -105,16 +105,14 @@ name, so a buffer visiting no file still gets the icon its name earns.
 Nothing where nerd-icons is not installed, and a plain character where
 the frame cannot draw the glyph.
 
-The lookup is handed over rather than done: `modern-tab-icon-for' calls
-it only where it has no answer for this name yet, and a row of tabs is
-built again on every command."
+The answer is kept under the name, because the lookup costs something
+and a row of tabs is built again on every command.  The key says which
+row asked: one table serves the buttons, the tab groups and this."
   (when (fboundp 'nerd-icons-icon-for-file)
     (let ((name (buffer-name buffer)))
-      (modern-tab-icon-for
-       ;; The key says which row asked: one table serves both.
-       (cons 'buffer name)
-       (lambda ()
-         (modern-tab-glyph (nerd-icons-icon-for-file name) ""))))))
+      (with-memoization (gethash (modern-tab--key (cons 'buffer name))
+                                 modern-tab--icons)
+        (modern-tab-glyph (nerd-icons-icon-for-file name) "")))))
 
 (defun modern-tab-line--buffer (tab)
   "Return the buffer TAB stands for, or nil where it stands for none.
@@ -131,8 +129,7 @@ terminal frame gives each the glyph it can draw.  Settled at enable it
 was settled for the display the enable happened on — and a daemon
 enables its modes with no frame at all, where the answer is a
 terminal's."
-  (propertize (modern-tab--button 'line-close-button
-                                  modern-tab-line-close-glyphs)
+  (propertize (modern-tab--button modern-tab-line-close-glyphs)
               'keymap tab-line-tab-close-map
               'mouse-face 'tab-line-close-highlight
               'help-echo "Click to close tab"))

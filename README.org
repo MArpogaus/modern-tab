@@ -189,16 +189,19 @@ key.
 
 An icon function is called with a buffer and returns a string, or nil
 for no icon.  =modern-tab-glyph= names a preferred glyph and a
-fallback, and =modern-tab-icon-for= keeps the answer — it calls a
-function only where it has none yet:
+fallback, and =modern-tab-icon-for= keeps the answer under the spec it
+was given — a string stands for itself, a plist names a nerd icon, and
+a function is called once for the string it returns:
 
 #+begin_src emacs-lisp
   (defun my/tab-icon (buffer)
-    (modern-tab-icon-for (buffer-name buffer)
-                         (if (buffer-modified-p buffer) "● " "  ")))
+    (modern-tab-icon-for (if (buffer-modified-p buffer) "● " "  ")))
 
   (setopt modern-tab-line-icon-function #'my/tab-icon)
 #+end_src
+
+The spec is the key, so hand it a value and not a closure built on the
+spot: a fresh function every call is a fresh question every call.
 
 ** Development
 
