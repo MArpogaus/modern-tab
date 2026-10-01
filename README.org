@@ -20,6 +20,7 @@
     - [[#the-tab-line][The Tab Line]]
   - [[#development][Development]]
   - [[#contributions][Contributions]]
+  - [[#use-of-llm-coding-tools][Use of LLM Coding Tools]]
   - [[#license][License]]
   - [[#contact][Contact]]
 
@@ -227,6 +228,12 @@ second reading the package as a MELPA reviewer would.  See
 
 Contributions are greatly appreciated!  Feel free to check the
 [[https://github.com/MArpogaus/modern-tab/issues][issues page]] or submit a [[https://github.com/MArpogaus/modern-tab/pulls][pull request]].
+
+** Use of LLM Coding Tools
+
+Parts of this package were written with the help of a large
+language model (LLM) coding assistant.  A person reviewed and tested
+every change before it was committed.
 
 ** License
 
