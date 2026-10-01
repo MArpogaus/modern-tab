@@ -26,8 +26,8 @@
 
 ** About The Project
 
-Emacs has two rows of tabs.  The =tab-bar= shows one tab per tab or tab
-group; the =tab-line= shows one tab per buffer of a window.  This
+Emacs has two rows of tabs. The =tab-bar= shows one tab per tab or tab
+group; the =tab-line= shows one tab per buffer of a window. This
 package gives both the look of the editors people come here from: a
 coloured indicator beside the selected tab, an icon on every tab, and —
 on the tab line — a close button that buries a buffer another window
@@ -37,30 +37,30 @@ still shows and kills one no window shows.
 
 [[file:img/screenshot-dark.png]]
 
-The two modes are independent.  The five indicator options are named
+The two modes are independent. The five indicator options are named
 the same in both; the rest differ, because the two rows name their tabs
 differently — the tab bar keys its icons on the name of a group, the
 tab line asks a function for the icon of a buffer.
 
-The buttons of the two rows are one family.  Every one of them leads
+The buttons of the two rows are one family. Every one of them leads
 with a codicon, so the new button, the close button of both rows, the
 menu button and the mark on the selected tab are drawn at one weight
 and one visual size.
 
 Icons come from [[https://github.com/rainstormstudio/nerd-icons.el][nerd-icons]] where it is installed, and a plain =?= stands
-where an icon option names a glyph it cannot supply.  A graphic frame
+where an icon option names a glyph it cannot supply. A graphic frame
 shows the first glyph of a candidate list as it is — which fonts draw
-it is the frame's business, fallbacks included.  A terminal refuses a
+it is the frame's business, fallbacks included. A terminal refuses a
 private use glyph (that is where a nerd font keeps its own) and takes
 the first plain candidate it can encode, so one daemon serves a graphic
-frame and a terminal frame at once.  A symbol a UTF-8 terminal can
+frame and a terminal frame at once. A symbol a UTF-8 terminal can
 encode but its font has no glyph for still shows a box: name plain
 strings in the icon options there.
 
-That refusal is a guess about a terminal Emacs cannot ask.  A terminal
+That refusal is a guess about a terminal Emacs cannot ask. A terminal
 picks the font and draws the characters itself, and =char-displayable-p=
 answers for the coding system alone, so a glyph the font lacks arrives
-as a box rather than being refused.  Where your terminal does carry the
+as a box rather than being refused. Where your terminal does carry the
 icon font, say so and it draws what a graphic frame draws:
 
 #+begin_src emacs-lisp
@@ -75,12 +75,12 @@ candidates straight back.
 
 *** Installation
 
-The package needs Emacs 29.1 or later and nothing else.  nerd-icons is
+The package needs Emacs 29.1 or later and nothing else. nerd-icons is
 optional: install it for the glyphs, or name plain strings in the icon
 options.
 
 The package is =modern-tab=, after its main file, and every symbol
-carries that name as its prefix; so does the repository.  Both modes
+carries that name as its prefix; so does the repository. Both modes
 are autoloaded, so nothing needs requiring:
 
 #+begin_src emacs-lisp
@@ -90,18 +90,18 @@ are autoloaded, so nothing needs requiring:
            (after-init . modern-tab-line-mode)))
 #+end_src
 
-Drop either hook to run one mode alone.  The rows themselves stay
+Drop either hook to run one mode alone. The rows themselves stay
 yours: turn on =tab-bar-mode= and =global-tab-line-mode= where you want
 them.
 
 *** Usage
 
-=M-x modern-tab-bar-mode= dresses the tab bar.  Turn on =tab-bar-mode=
+=M-x modern-tab-bar-mode= dresses the tab bar. Turn on =tab-bar-mode=
 to see it.
 
-=M-x modern-tab-line-mode= dresses the tab line.  Turn on
+=M-x modern-tab-line-mode= dresses the tab line. Turn on
 =tab-line-mode= or =global-tab-line-mode= to see it — the row is yours,
-and this mode neither enables nor disables it.  A window showing one
+and this mode neither enables nor disables it. A window showing one
 buffer hides its tab line; set =modern-tab-line-auto-hide= to nil to
 keep the row.
 
@@ -111,16 +111,16 @@ of its buttons show — and gives every one of them back when it is
 turned off.
 
 On a terminal the tab bar shows no menu button, whatever
-=modern-tab-bar-format= says.  See [[file:docs/implementation.org][docs/implementation.org]] for the
+=modern-tab-bar-format= says. See [[file:docs/implementation.org][docs/implementation.org]] for the
 measurement behind that.
 
 ** Customization
 
 *** The Indicator
 
-The indicator is the vertical bar beside a tab.  Each mode names five
+The indicator is the vertical bar beside a tab. Each mode names five
 options for it: a width and a colour for the selected tab, a width and
-a colour for the others, and one height for both.  The two modes use
+a colour for the others, and one height for both. The two modes use
 the same names, with =modern-tab-bar-= or =modern-tab-line-= in front.
 
 | Option                                      | Default              |
@@ -136,8 +136,8 @@ the same names, with =modern-tab-bar-= or =modern-tab-line-= in front.
 | =modern-tab-line-inactive-indicator-color=  | ~shadow~             |
 | =modern-tab-line-indicator-height=          | ~20~, in pixels      |
 
-A width of nil or zero draws no indicator at all.  A colour is a colour
-name or a face, whose foreground is then the colour.  A frame without
+A width of nil or zero draws no indicator at all. A colour is a colour
+name or a face, whose foreground is then the colour. A frame without
 images draws one column of a vertical line instead.
 
 *** The Tab Bar
@@ -169,7 +169,7 @@ are matched with the case rules of whoever wrote them.
 
 The =:style= is the middle of a nerd-icons function name — =oct= for
 =nerd-icons-octicon=, =md= for =nerd-icons-mdicon= — and the =:icon= is
-the glyph name without its =nf-<style>-= front.  =M-x
+the glyph name without its =nf-<style>-= front. =M-x
 nerd-icons-insert= lists what there is.
 
 *** The Tab Line
@@ -189,7 +189,7 @@ it, kills it where none does, and deletes the window with its last tab.
 key.
 
 An icon function is called with a buffer and returns a string, or nil
-for no icon.  =modern-tab-glyph= names a preferred glyph and a
+for no icon. =modern-tab-glyph= names a preferred glyph and a
 fallback, and =modern-tab-icon-for= keeps the answer under the spec it
 was given — a string stands for itself, a plist names a nerd icon, and
 a function is called once for the string it returns:
@@ -219,20 +219,20 @@ The indent, checkdoc and complexity checks are pre-commit hooks of
 [[https://github.com/MArpogaus/emacs-pre-commit-hooks][emacs-pre-commit-hooks]]: indent gives Lisp the indentation =indent-region=
 gives it, each file loaded first, checkdoc reads the documentation
 strings, and complexity stops a commit where a function costs a reader
-more than fifteen.  Check-declare and melpazoid join them before a
+more than fifteen. Check-declare and melpazoid join them before a
 push, the first saying where a declare-function has gone stale, the
-second reading the package as a MELPA reviewer would.  See
+second reading the package as a MELPA reviewer would. See
 [[file:docs/implementation.org][docs/implementation.org]] for how the two modes are built.
 
 ** Contributions
 
-Contributions are greatly appreciated!  Feel free to check the
+Contributions are greatly appreciated! Feel free to check the
 [[https://github.com/MArpogaus/modern-tab/issues][issues page]] or submit a [[https://github.com/MArpogaus/modern-tab/pulls][pull request]].
 
 ** Use of LLM Coding Tools
 
 Parts of this package were written with the help of a large
-language model (LLM) coding assistant.  A person reviewed and tested
+language model (LLM) coding assistant. A person reviewed and tested
 every change before it was committed.
 
 ** License

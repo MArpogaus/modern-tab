@@ -88,7 +88,7 @@ of every window."
          (set-default symbol value)
          ;; A change takes effect at once, in both directions: the
          ;; rows this package hid come back, and the decision is then
-         ;; made again, which does nothing where VALUE is nil.  The
+         ;; made again, which does nothing where VALUE is nil. The
          ;; option can be set while this file is still loading, so
          ;; the functions below it are asked for first.
          (when (fboundp 'modern-tab-line--show-everywhere)

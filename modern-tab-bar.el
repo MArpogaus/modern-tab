@@ -139,9 +139,9 @@ two tab names rather than as the mark on one of them."
   :type 'hook
   ;; The value is copied into `tab-bar-format' when the mode starts,
   ;; so a reader who sets this option while the mode is on is handed
-  ;; the new value here as well.  Every other option of this package
+  ;; the new value here as well. Every other option of this package
   ;; reaches the row at the next redisplay, and this one has to say so
-  ;; too.  What the mode borrowed is untouched, so turning the mode off
+  ;; too. What the mode borrowed is untouched, so turning the mode off
   ;; still gives the reader their own format back.
   :set (lambda (symbol value)
          (set-default symbol value)
@@ -225,11 +225,11 @@ each of them."
     ;; `tab-bar-tab-inactive': a face meant for a tab, and in a bar
     ;; this package draws it is the colour of neither the bar nor a
     ;; tab — measured with doom-one, the word "Menu" could not be
-    ;; read at all.  But no face at all will not do either: a string
+    ;; read at all. But no face at all will not do either: a string
     ;; with none wears the face of the row it sits in, and a reader's
     ;; theme can leave that face without any contrast of its own —
     ;; measured with doom-one-light, the tab bar face was #f0f0f0 on
-    ;; #f0f0f0, and the row swallowed the button whole.  So both
+    ;; #f0f0f0, and the row swallowed the button whole. So both
     ;; buttons of this bar wear `default', the one face every theme
     ;; keeps readable.
     `((menu-bar menu-item
@@ -293,7 +293,7 @@ This is what `tab-bar-tab-name-format-function' is set to."
                        (if selected '(t selected) '(t non-selected)))
                  (modern-tab-bar-close-button) " "))
      ;; One row, one face: every tab wears `tab-bar-tab' and the weight
-     ;; alone says which one is current.  `tab-bar-tab-inactive' carries
+     ;; alone says which one is current. `tab-bar-tab-inactive' carries
      ;; a colour and a background of its own in most themes — under
      ;; doom-one-light, #c6c7c7 on #f0f0f0, which is a name barely
      ;; there — and a row of tabs each in its own shade reads as a row

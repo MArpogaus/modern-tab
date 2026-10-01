@@ -119,7 +119,7 @@ idea."
                              (make-string (* width height) ?1) "\n")
                      'pbm t :foreground color :ascent 'center))))
      ;; A face attribute of nil is not "leave it alone", it is an error
-     ;; the display logs on every redisplay.  A bar without a colour
+     ;; the display logs on every redisplay. A bar without a colour
      ;; wears no face and takes the one of the row it sits in.
      (t (propertize "|" 'face (and color (list :foreground color
                                                :background color)))))))
@@ -149,7 +149,7 @@ asked, and a wrong answer here shows boxes where the icons belong."
   :type 'boolean
   ;; `custom-initialize-reset', which a `defcustom' takes by default,
   ;; calls the `:set' function as the option is defined — and the
-  ;; forgetting it does is defined further down this file.  There is
+  ;; forgetting it does is defined further down this file. There is
   ;; nothing drawn to forget at that moment anyway.
   :initialize #'custom-initialize-default
   :set #'modern-tab-set-and-forget
@@ -320,7 +320,7 @@ its teardown must give nothing back and switch nothing off."
 ;;;; What a mode gives back when it is turned off
 
 ;; The icons of a frame depend on the font it has, so a font arriving is
-;; a reason to forget them.  On the hook of the file rather than of a
+;; a reason to forget them. On the hook of the file rather than of a
 ;; mode: two modes read the same table, and either of them turning off
 ;; used to take the hook away from the other.
 (add-hook 'after-setting-font-hook #'modern-tab-forget)
