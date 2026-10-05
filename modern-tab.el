@@ -4,7 +4,7 @@
 
 ;; Author: Marcel Arpogaus <znepry.necbtnhf@tznvy.pbz>
 ;; Assisted-by: Claude:claude-opus-5
-;; Version: 1.0.1
+;; Version: 1.1
 ;; Package-Requires: ((emacs "29.1"))
 ;; Keywords: convenience, tabs
 ;; URL: https://github.com/MArpogaus/modern-tab
@@ -119,7 +119,7 @@ idea."
                              (make-string (* width height) ?1) "\n")
                      'pbm t :foreground color :ascent 'center))))
      ;; A face attribute of nil is not "leave it alone", it is an error
-     ;; the display logs on every redisplay.  A bar without a colour
+     ;; the display logs on every redisplay. A bar without a colour
      ;; wears no face and takes the one of the row it sits in.
      (t (propertize "|" 'face (and color (list :foreground color
                                                :background color)))))))
@@ -149,7 +149,7 @@ asked, and a wrong answer here shows boxes where the icons belong."
   :type 'boolean
   ;; `custom-initialize-reset', which a `defcustom' takes by default,
   ;; calls the `:set' function as the option is defined — and the
-  ;; forgetting it does is defined further down this file.  There is
+  ;; forgetting it does is defined further down this file. There is
   ;; nothing drawn to forget at that moment anyway.
   :initialize #'custom-initialize-default
   :set #'modern-tab-set-and-forget
@@ -190,10 +190,19 @@ frame; see `modern-tab-terminal-glyphs'."
 ;;;; Icons
 
 (defvar modern-tab--icons (make-hash-table :test #'equal)
-  "The icon each key answered, kept per kind of display.
-A terminal and a graphic frame answer differently, and one session can
-hold both.  `modern-tab-forget' empties this where the answer can
-change: another icon list, or a font arriving.")
+  "The icon each spec answered, kept under `modern-tab--key'.
+The spec is the key, so an option a reader changes answers for itself
+and nothing has to be forgotten for the answer to be right.
+`modern-tab-forget' empties the table all the same, for a lookup whose
+answer changed underneath it.")
+
+(defun modern-tab--key (spec)
+  "Return the key the answer for SPEC is kept under.
+What the answer turns on besides the spec: whether this display draws
+glyphs at all, and whether the reader says their terminal carries the
+icons.  A terminal and a graphic frame answer differently, and one
+session can hold both."
+  (list spec (display-graphic-p) modern-tab-terminal-glyphs))
 
 (defun modern-tab-forget (&rest _)
   "Forget the icons answered so far, and draw the rows again.
@@ -208,8 +217,10 @@ before the change."
   (force-mode-line-update t))
 
 (defun modern-tab-set-and-forget (symbol value)
-  "Set SYMBOL to VALUE and forget the icons answered before it changed.
-A `:set' function for every option an icon depends on."
+  "Set SYMBOL to VALUE and draw the rows again.
+A `:set' function for every option a row is drawn from.  The answers
+kept do not have to be dropped for the new value to show — the spec is
+the key — but a row already drawn does: see `modern-tab-forget'."
   (set-default symbol value)
   (modern-tab-forget))
 
@@ -239,37 +250,38 @@ nerd-icons-corfu."
 
 (defun modern-tab-icon (spec)
   "Return SPEC as the string that shows on a tab.
-A string stands for itself, a plist names a nerd icon, a function is
-called for one, and nil is nothing.  The function is what a caller
-whose lookup is expensive passes, so that `modern-tab-icon-for' can
-leave it uncalled where it already has the answer."
+A string stands for itself, a list of strings is candidates for
+`modern-tab-glyph', a plist names a nerd icon, a function is called
+for one, and nil is nothing.  The function is what a caller whose
+lookup is expensive passes, so that `modern-tab-icon-for' can leave it
+uncalled where it already has the answer.
+
+The shapes cannot be mistaken for one another: a plist opens with a
+keyword and candidates open with a string."
   (cond ((null spec) "")
         ((stringp spec) spec)
         ((functionp spec) (funcall spec))
+        ((and (consp spec) (stringp (car spec))) (apply #'modern-tab-glyph spec))
         (t (modern-tab--nerd-icon spec))))
 
-(defun modern-tab-icon-for (key spec)
-  "Return the icon SPEC names for KEY, and keep the answer.
+(defun modern-tab-icon-for (spec)
+  "Return the icon SPEC names, and keep the answer under SPEC itself.
 A row of tabs is built again on every command, and finding a nerd icon
 walks the table of its style — 6880 entries for the material design
-one — so the answer is kept, per key and per kind of display.
+one — so the answer is kept.  A spec that is a function is called once
+and not again, which is where a lookup that costs something belongs.
 
-SPEC is read only where KEY has no answer yet: where it has one, SPEC
-is ignored and the kept answer comes back, so a caller that changes
-SPEC calls `modern-tab-forget' first.  A SPEC that is a function is not
-called at all on a hit, which is how a caller keeps an expensive lookup
-out of every redisplay."
-  (with-memoization (gethash (list key (display-graphic-p))
-                             modern-tab--icons)
+The spec is the key, so a reader who changes an icon option asks a
+question that has no answer yet and gets a fresh one."
+  (with-memoization (gethash (modern-tab--key spec) modern-tab--icons)
     (modern-tab-icon spec)))
 
-(defun modern-tab--button (key glyphs)
-  "Return the best of GLYPHS this display draws, kept under KEY.
-GLYPHS is a list of candidates as `modern-tab-glyph' takes them, and
-KEY is what `modern-tab-icon-for' keeps the answer under: the
-candidates are walked only where KEY has no answer for this kind of
-display yet.  Every button of both rows is drawn through here."
-  (modern-tab-icon-for key (lambda () (apply #'modern-tab-glyph glyphs))))
+(defun modern-tab--button (glyphs)
+  "Return the best of GLYPHS this display draws, and keep the answer.
+GLYPHS is a list of candidates as `modern-tab-glyph' takes them, which
+is one of the shapes `modern-tab-icon' reads: every button of both
+rows is one call of `modern-tab-icon-for', kept under its candidates."
+  (modern-tab-icon-for glyphs))
 
 ;;;; What a mode borrows and gives back
 
@@ -307,11 +319,16 @@ its teardown must give nothing back and switch nothing off."
 
 ;;;; What a mode gives back when it is turned off
 
-;; The icons of a frame depend on the font it has, so a font arriving is
-;; a reason to forget them.  On the hook of the file rather than of a
-;; mode: two modes read the same table, and either of them turning off
-;; used to take the hook away from the other.
-(add-hook 'after-setting-font-hook #'modern-tab-forget)
+(defun modern-tab--mode-changed ()
+  "Forget the icons, and watch the font while a mode of the package is on.
+Both modes call this as they go on or off.  The icons of a frame depend
+on its font, so a new font forgets them; the hook stays while either
+mode is on, because both read the same table."
+  (if (or (bound-and-true-p modern-tab-bar-mode)
+          (bound-and-true-p modern-tab-line-mode))
+      (add-hook 'after-setting-font-hook #'modern-tab-forget)
+    (remove-hook 'after-setting-font-hook #'modern-tab-forget))
+  (modern-tab-forget))
 
 (provide 'modern-tab)
 ;;; modern-tab.el ends here

@@ -98,32 +98,32 @@ goes onto the tab bar.  Nil shows the name as it is."
   :type 'function)
 
 (defcustom modern-tab-bar-new-glyphs '("  " " + ")
-  "Glyphs of the button that makes a tab, best first.
-A graphic frame shows the first one; a terminal takes the first it can
-encode that is no private use glyph, so keep a plain string last."
+  "Glyphs of the button that makes a tab.
+The candidates `modern-tab-glyph' chooses from, best first."
   :type '(repeat string)
   :set #'modern-tab-set-and-forget)
 
 (defcustom modern-tab-bar-close-glyphs
   '("  " " ✕ " " × " " x ")
-  "Glyphs of the close button, best first.
-A graphic frame shows the first one; a terminal takes the first it can
-encode that is no private use glyph, so keep a plain character last."
+  "Glyphs of the close button.
+The candidates `modern-tab-glyph' chooses from, best first."
   :type '(repeat string)
   :set #'modern-tab-set-and-forget)
 
 (defcustom modern-tab-bar-menu-glyphs '(" " "≡ " " Menu ")
-  "Glyphs of the menu button, best first.
-A graphic frame shows the first one; a terminal takes the first it can
-encode that is no private use glyph, so keep a plain string last."
+  "Glyphs of the menu button.
+The candidates `modern-tab-glyph' chooses from, best first."
   :type '(repeat string)
   :set #'modern-tab-set-and-forget)
 
-(defcustom modern-tab-bar-current-glyphs '(" " "› " "  ")
-  "Glyphs that mark the selected tab, best first.
-A graphic frame shows the first one; a terminal takes the first it can
-encode that is no private use glyph.  The last resort here is two
-spaces, as wide as the glyphs before them."
+(defcustom modern-tab-bar-current-glyphs '(" " "▸ " "  ")
+  "Glyphs that mark the selected tab.
+The candidates `modern-tab-glyph' chooses from, best first.  The last
+resort here is two spaces, as wide as the glyphs before them.
+
+A filled triangle, and a plain one of the same size behind it for a
+terminal: the chevron that stood here read as punctuation between
+two tab names rather than as the mark on one of them."
   :type '(repeat string)
   :set #'modern-tab-set-and-forget)
 
@@ -139,9 +139,9 @@ spaces, as wide as the glyphs before them."
   :type 'hook
   ;; The value is copied into `tab-bar-format' when the mode starts,
   ;; so a reader who sets this option while the mode is on is handed
-  ;; the new value here as well.  Every other option of this package
+  ;; the new value here as well. Every other option of this package
   ;; reaches the row at the next redisplay, and this one has to say so
-  ;; too.  What the mode borrowed is untouched, so turning the mode off
+  ;; too. What the mode borrowed is untouched, so turning the mode off
   ;; still gives the reader their own format back.
   :set (lambda (symbol value)
          (set-default symbol value)
@@ -157,13 +157,13 @@ Per redisplay and not once at enable: `modern-tab--button' keeps the
 answer per display, so a daemon serving a graphic frame and a terminal
 frame gives each the glyph it can draw, and a reader who customizes
 `modern-tab-bar-new-glyphs' sees the new one at the next redisplay."
-  (modern-tab--button 'new-button modern-tab-bar-new-glyphs))
+  (modern-tab--button modern-tab-bar-new-glyphs))
 
 (defun modern-tab-bar-close-button ()
   "Return the string of the close button, drawn for this display.
 The `close-tab' property is what the tab bar dispatches a click on it
 on.  See `modern-tab-bar-new-button' for why it is not settled once."
-  (propertize (modern-tab--button 'close-button modern-tab-bar-close-glyphs)
+  (propertize (modern-tab--button modern-tab-bar-close-glyphs)
               'close-tab t
               'help-echo "Click to close tab"))
 
@@ -225,17 +225,16 @@ each of them."
     ;; `tab-bar-tab-inactive': a face meant for a tab, and in a bar
     ;; this package draws it is the colour of neither the bar nor a
     ;; tab — measured with doom-one, the word "Menu" could not be
-    ;; read at all.  But no face at all will not do either: a string
+    ;; read at all. But no face at all will not do either: a string
     ;; with none wears the face of the row it sits in, and a reader's
     ;; theme can leave that face without any contrast of its own —
     ;; measured with doom-one-light, the tab bar face was #f0f0f0 on
-    ;; #f0f0f0, and the row swallowed the button whole.  So both
+    ;; #f0f0f0, and the row swallowed the button whole. So both
     ;; buttons of this bar wear `default', the one face every theme
     ;; keeps readable.
     `((menu-bar menu-item
                 ,(propertize
-                  (modern-tab--button 'menu-button
-                                      modern-tab-bar-menu-glyphs)
+                  (modern-tab--button modern-tab-bar-menu-glyphs)
                   'face (modern-tab-bar--button-face))
                 tab-bar-menu-bar :help "Menu bar"))))
 
@@ -247,9 +246,6 @@ them, not with those of whatever buffer redisplay happens to be in:
 claimed \"[P] homelab\" in most buffers and not in others."
   (let ((name (or name "")))
     (modern-tab-icon-for
-     ;; The key says which row asked: one table serves both, and a tab
-     ;; group and a buffer can carry the same name.
-     (cons 'group name)
      (or (cdr (seq-find (lambda (entry)
                           (let ((case-fold-search nil))
                             (string-match-p (car entry) name)))
@@ -283,8 +279,7 @@ This is what `tab-bar-tab-name-format-function' is set to."
   (let ((selected (eq (car tab) 'current-tab)))
     (propertize
      (concat (if selected
-                 (modern-tab--button 'current-glyph
-                                     modern-tab-bar-current-glyphs)
+                 (modern-tab--button modern-tab-bar-current-glyphs)
                ;; As wide as the mark, so the names of the tabs line
                ;; up: every candidate of `modern-tab-bar-current-glyphs'
                ;; is two columns, the last one two spaces.
@@ -297,13 +292,20 @@ This is what `tab-bar-tab-name-format-function' is set to."
              (if (memq tab-bar-close-button-show
                        (if selected '(t selected) '(t non-selected)))
                  (modern-tab-bar-close-button) " "))
-     ;; The face the tab bar itself would use, which is where
-     ;; `tab-bar-tab-inactive', `tab-bar-tab-ungrouped' and a reader's
-     ;; own `tab-bar-tab-face-function' live.  Naming `tab-bar-tab'
-     ;; here drew every tab in the selected tab's colours.
+     ;; One row, one face: every tab wears `tab-bar-tab' and the weight
+     ;; alone says which one is current. `tab-bar-tab-inactive' carries
+     ;; a colour and a background of its own in most themes — under
+     ;; doom-one-light, #c6c7c7 on #f0f0f0, which is a name barely
+     ;; there — and a row of tabs each in its own shade reads as a row
+     ;; of buttons rather than as one bar.
+     ;;
+     ;; What the tab bar chose stands behind it, for whatever
+     ;; `tab-bar-tab' leaves open: that is where a reader's own
+     ;; `tab-bar-tab-face-function' and `tab-bar-tab-ungrouped' live.
      ;; No `mouse-face' here: `tab-bar-tab-highlight' painted a cyan
      ;; block under the pointer that the modern look does not want.
-     'face (list :inherit (funcall tab-bar-tab-face-function tab)
+     'face (list :inherit (list 'tab-bar-tab
+                                (funcall tab-bar-tab-face-function tab))
                  :weight (if selected 'bold 'normal)))))
 
 ;;;; The mode
@@ -341,7 +343,7 @@ on the next redisplay."
   (if modern-tab-bar-mode
       (modern-tab-bar--setup)
     (modern-tab-bar--teardown))
-  (modern-tab-forget))
+  (modern-tab--mode-changed))
 
 (provide 'modern-tab-bar)
 ;;; modern-tab-bar.el ends here

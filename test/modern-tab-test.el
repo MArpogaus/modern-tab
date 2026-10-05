@@ -133,11 +133,16 @@ Every one of them leads with a codicon — the block from EA60 to EC84 —
 because a nerd glyph of another family is drawn at another weight: the
 material design chevron is bold beside the codicon plus, and the
 octicon cross is half its size.  The close button of the two rows is
-the same glyph, with the padding each row needs."
+the same glyph, with the padding each row needs.
+
+The mark on the selected tab is not one of them: it is no button and
+stands beside a name rather than in the row of buttons, and it is
+chosen for the ink it puts there — the octicon triangle covers 9.3
+pixels against the codicon triangle's 24.2, measured in a graphic
+frame."
   (dolist (glyphs (list modern-tab-bar-new-glyphs
                         modern-tab-bar-close-glyphs
                         modern-tab-bar-menu-glyphs
-                        modern-tab-bar-current-glyphs
                         modern-tab-line-close-glyphs))
     (should (<= #xEA60 (modern-tab-test--glyph glyphs) #xEC84)))
   (should (= (modern-tab-test--glyph modern-tab-bar-close-glyphs)
@@ -152,15 +157,28 @@ the same glyph, with the padding each row needs."
                      (car (last modern-tab-bar-current-glyphs)))))
 
 (ert-deftest modern-tab-test-a-button-is-resolved-once-and-kept ()
-  "`modern-tab--button' picks a candidate for this display and keeps it."
+  "`modern-tab--button' picks a candidate for this display and keeps it.
+The candidates are the key, so another list is another answer and no
+option has to be forgotten for a reader to see the glyph they set."
   (skip-unless (not (display-graphic-p)))
   (modern-tab-forget)
   ;; The nerd candidate is a private use glyph, which a terminal refuses.
-  (should (equal (modern-tab--button 'a-button '("\uEA76 " "x ")) "x "))
-  ;; Kept: the candidates of the second call are not looked at.
-  (should (equal (modern-tab--button 'a-button '("!")) "x "))
+  (should (equal (modern-tab--button '("\uEA76 " "x ")) "x "))
+  ;; Kept, under the candidates it was asked about.
+  (should (gethash (modern-tab--key '("\uEA76 " "x ")) modern-tab--icons))
+  (should (equal (modern-tab--button '("\uEA76 " "x ")) "x "))
+  ;; Another list of candidates answers for itself.
+  (should (equal (modern-tab--button '("!")) "!")))
+
+(ert-deftest modern-tab-test-a-terminal-that-carries-the-icons-says-so ()
+  "The answer follows `modern-tab-terminal-glyphs' with nothing forgotten.
+The option is part of the key the answer is kept under."
+  (skip-unless (not (display-graphic-p)))
   (modern-tab-forget)
-  (should (equal (modern-tab--button 'a-button '("!")) "!")))
+  (let ((modern-tab-terminal-glyphs nil))
+    (should (equal (modern-tab--button '("\uEA76 " "x ")) "x ")))
+  (let ((modern-tab-terminal-glyphs t))
+    (should (equal (modern-tab--button '("\uEA76 " "x ")) "\uEA76 "))))
 
 (ert-deftest modern-tab-test-an-icon-spec-is-a-string-or-a-plist ()
   "A string stands for itself, nil is nothing, a plist names a nerd icon."
@@ -171,13 +189,19 @@ the same glyph, with the padding each row needs."
   (should (equal (modern-tab-icon '(:style "oct" :icon "dot_fill")) "?")))
 
 (ert-deftest modern-tab-test-an-icon-is-answered-once-per-display ()
-  "The answer is kept, and forgetting it asks again."
+  "The answer is kept under the spec, and a lookup runs once.
+A spec that is a function is what a caller with an expensive lookup
+passes; it is called for the first answer and not again."
   (modern-tab-forget)
-  (should (equal (modern-tab-icon-for "a group" "*") "*"))
-  ;; The spec of the second call is ignored: the answer is the one kept.
-  (should (equal (modern-tab-icon-for "a group" "!") "*"))
-  (modern-tab-forget)
-  (should (equal (modern-tab-icon-for "a group" "!") "!")))
+  (let ((calls 0))
+    (should (equal (modern-tab-icon-for "*") "*"))
+    (should (equal (modern-tab-icon-for
+                    (lambda () (setq calls (1+ calls)) "!"))
+                   "!"))
+    (should (= calls 1))
+    ;; Kept: the same spec does not run the lookup again.
+    (should (equal (modern-tab-icon-for "*") "*"))
+    (should (= calls 1))))
 
 (ert-deftest modern-tab-test-forgetting-an-icon-clears-the-row-drawn ()
   "A row of the tab line already drawn is kept in a window parameter.
@@ -188,12 +212,18 @@ the change."
   (modern-tab-forget)
   (should-not (window-parameter nil 'tab-line-cache)))
 
-(ert-deftest modern-tab-test-setting-an-option-forgets-the-icons ()
-  "An option an icon depends on empties the table when it is set."
-  (modern-tab-icon-for "a group" "*")
-  (modern-tab-set-and-forget 'modern-tab-bar-default-icon "+")
-  (should (equal (modern-tab-icon-for "a group" "!") "!"))
-  (setq modern-tab-bar-default-icon '(:style "oct" :icon "dot_fill")))
+(ert-deftest modern-tab-test-a-changed-option-needs-no-forgetting ()
+  "A new value is a new spec, and a new spec has no answer yet.
+The table was keyed by a name of the caller's choosing before, so an
+option that changed under it kept the icon of the value before."
+  (modern-tab-forget)
+  (should (equal (modern-tab-bar--group-icon "a group")
+                 (modern-tab-icon modern-tab-bar-default-icon)))
+  (let ((modern-tab-bar-default-icon "+"))
+    (should (equal (modern-tab-bar--group-icon "a group") "+")))
+  ;; And the answer for the value before is still there, unasked.
+  (should (equal (modern-tab-bar--group-icon "a group")
+                 (modern-tab-icon modern-tab-bar-default-icon))))
 
 ;;;; The tab bar
 
@@ -352,14 +382,22 @@ and no variable of the tab bar holds them."
                            tab-bar-tab-group-format-function)
                      was)))))
 
-(ert-deftest modern-tab-bar-test-the-font-hook-belongs-to-the-file ()
-  "Forgetting the icons on a new font is not one mode's business.
-Both modes read the same table, and either of them turning off used to
-take the hook away from the other."
-  (should (memq #'modern-tab-forget after-setting-font-hook))
-  (modern-tab-bar-mode 1)
-  (modern-tab-bar-mode -1)
-  (should (memq #'modern-tab-forget after-setting-font-hook)))
+(ert-deftest modern-tab-bar-test-the-font-hook-lives-while-a-mode-is-on ()
+  "Loading the package adds no hook; a mode adds it, the last one off removes it.
+Both modes read the same table, so one of them going off leaves the
+hook to the other."
+  (should-not (memq #'modern-tab-forget after-setting-font-hook))
+  (unwind-protect
+      (progn
+        (modern-tab-bar-mode 1)
+        (should (memq #'modern-tab-forget after-setting-font-hook))
+        (modern-tab-line-mode 1)
+        (modern-tab-bar-mode -1)
+        (should (memq #'modern-tab-forget after-setting-font-hook))
+        (modern-tab-line-mode -1)
+        (should-not (memq #'modern-tab-forget after-setting-font-hook)))
+    (modern-tab-bar-mode -1)
+    (modern-tab-line-mode -1)))
 
 (ert-deftest modern-tab-bar-test-a-group-with-no-name-is-not-an-error ()
   "`tab-bar-tab-group-format-function' can be called with a nil group.
@@ -370,24 +408,33 @@ Stock Emacs does not, but the hook is public and a reader who replaces
   (should (stringp (modern-tab-bar--group-icon ""))))
 
 (ert-deftest modern-tab-bar-test-a-tab-wears-the-face-the-tab-bar-chose ()
-  "The face comes from `tab-bar-tab-face-function', not from a name here.
-Naming `tab-bar-tab' drew every tab in the selected tab's colours, and
-`tab-bar-tab-inactive' never rendered at all."
+  "Every tab wears `tab-bar-tab', and the weight says which is current.
+The row is one bar: `tab-bar-tab-inactive' has a background of its own
+in most themes, and a tab in its own shade reads as a button.  The
+face `tab-bar-tab-face-function' answers with stands behind
+`tab-bar-tab', for whatever that face leaves open."
   (let* ((tab-bar-close-button-show nil)
          (calls 0)
          (tab-bar-tab-face-function
           (lambda (_tab) (setq calls (1+ calls)) 'my-face)))
-    (should (equal (get-text-property
-                    0 'face (modern-tab-bar-name-format '(tab (name . "x")) 1))
-                   '(:inherit my-face :weight normal)))
-    (should (= calls 1))))
+    (dolist (case '((tab . normal) (current-tab . bold)))
+      (should (equal (get-text-property
+                      0 'face (modern-tab-bar-name-format
+                               (list (car case) '(name . "x")) 1))
+                     `(:inherit (tab-bar-tab my-face) :weight ,(cdr case)))))
+    (should (= calls 2))))
 
 (ert-deftest modern-tab-test-the-icon-table-tells-the-rows-apart ()
   "A tab group and a buffer of the same name do not share an icon.
-One table serves both rows, so the key says which row asked."
+One table serves both rows: the tab bar keys the answer by the spec it
+resolved and the tab line by the name it looked up, and the two shapes
+of key cannot meet."
   (modern-tab-forget)
-  (should (equal (modern-tab-icon-for (cons 'group "same") "G") "G"))
-  (should (equal (modern-tab-icon-for (cons 'buffer "same") "B") "B")))
+  (let ((modern-tab-bar-icons '(("same" . "G"))))
+    (should (equal (modern-tab-bar--group-icon "same") "G")))
+  (cl-letf (((symbol-function 'nerd-icons-icon-for-file) (lambda (&rest _) "B")))
+    (should (equal (modern-tab-line-file-icon (get-buffer-create "same"))
+                   "B"))))
 
 ;;;; The tab line
 
@@ -459,6 +506,27 @@ then carried a terminal's answer onto every graphic frame after it."
                       (modern-tab-line-tab-format (car tabs) tabs)))))
       ;; and the binding is undone, so nothing of the reader's is lost
       (should (equal tab-line-close-button "SETTLED")))))
+
+(ert-deftest modern-tab-line-test-the-last-tab-takes-its-window-only-where-it-can ()
+  "Closing the last tab deletes a window of a split, and keeps a sole one."
+  (skip-unless (> (window-body-height) 6))
+  (delete-other-windows)
+  (let ((sole (selected-window))
+        (one (generate-new-buffer "modern-tab-line-test-sole")))
+    (set-window-buffer sole one)
+    (set-window-prev-buffers sole nil)
+    (set-window-next-buffers sole nil)
+    (modern-tab-line-close-tab one)
+    (should (window-live-p sole))
+    (let* ((other (split-window))
+           (two (generate-new-buffer "modern-tab-line-test-split")))
+      (select-window other)
+      (set-window-buffer other two)
+      (set-window-prev-buffers other nil)
+      (set-window-next-buffers other nil)
+      (modern-tab-line-close-tab two)
+      (should-not (window-live-p other))
+      (should (window-live-p sole)))))
 
 (ert-deftest modern-tab-line-test-closing-a-tab-kills-the-buffer ()
   "A buffer no other window shows is killed when its tab closes."

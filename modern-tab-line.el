@@ -47,12 +47,12 @@
   "Height of the bar beside a tab, in pixels."
   :type 'natnum)
 
-(defcustom modern-tab-line-active-indicator-width 3
+(defcustom modern-tab-line-active-indicator-width 2
   "Width of the bar beside the selected tab, in pixels.
 Nil or zero draws no bar at all."
   :type '(choice natnum (const :tag "None" nil)))
 
-(defcustom modern-tab-line-inactive-indicator-width 0
+(defcustom modern-tab-line-inactive-indicator-width 1
   "Width of the bar beside a tab that is not selected, in pixels.
 Nil or zero draws no bar at all."
   :type '(choice natnum (const :tag "None" nil)))
@@ -74,9 +74,8 @@ Nil shows no icon at all."
   :set #'modern-tab-set-and-forget)
 
 (defcustom modern-tab-line-close-glyphs '(" " "✕ " "× " "x ")
-  "Glyphs of the close button, best first.
-A graphic frame shows the first one; a terminal takes the first it can
-encode that is no private use glyph, so keep a plain character last."
+  "Glyphs of the close button.
+The candidates `modern-tab-glyph' chooses from, best first."
   :type '(repeat string)
   :set #'modern-tab-set-and-forget)
 
@@ -89,7 +88,7 @@ of every window."
          (set-default symbol value)
          ;; A change takes effect at once, in both directions: the
          ;; rows this package hid come back, and the decision is then
-         ;; made again, which does nothing where VALUE is nil.  The
+         ;; made again, which does nothing where VALUE is nil. The
          ;; option can be set while this file is still loading, so
          ;; the functions below it are asked for first.
          (when (fboundp 'modern-tab-line--show-everywhere)
@@ -105,16 +104,14 @@ name, so a buffer visiting no file still gets the icon its name earns.
 Nothing where nerd-icons is not installed, and a plain character where
 the frame cannot draw the glyph.
 
-The lookup is handed over rather than done: `modern-tab-icon-for' calls
-it only where it has no answer for this name yet, and a row of tabs is
-built again on every command."
+The answer is kept under the name, because the lookup costs something
+and a row of tabs is built again on every command.  The key says which
+row asked: one table serves the buttons, the tab groups and this."
   (when (fboundp 'nerd-icons-icon-for-file)
     (let ((name (buffer-name buffer)))
-      (modern-tab-icon-for
-       ;; The key says which row asked: one table serves both.
-       (cons 'buffer name)
-       (lambda ()
-         (modern-tab-glyph (nerd-icons-icon-for-file name) ""))))))
+      (with-memoization (gethash (modern-tab--key (cons 'buffer name))
+                                 modern-tab--icons)
+        (modern-tab-glyph (nerd-icons-icon-for-file name) "")))))
 
 (defun modern-tab-line--buffer (tab)
   "Return the buffer TAB stands for, or nil where it stands for none.
@@ -131,8 +128,7 @@ terminal frame gives each the glyph it can draw.  Settled at enable it
 was settled for the display the enable happened on — and a daemon
 enables its modes with no frame at all, where the answer is a
 terminal's."
-  (propertize (modern-tab--button 'line-close-button
-                                  modern-tab-line-close-glyphs)
+  (propertize (modern-tab--button modern-tab-line-close-glyphs)
               'keymap tab-line-tab-close-map
               'mouse-face 'tab-line-close-highlight
               'help-echo "Click to close tab"))
@@ -215,7 +211,9 @@ where none does."
     ;; The window goes only where its tab really went, and never the
     ;; sole window of a frame.
     (when (and last (not (buffer-live-p buffer)))
-      (ignore-errors (delete-window window)))))
+      ;; `t' and not `frame': the sole window of a frame stays.
+      (when (eq (window-deletable-p window) t)
+        (delete-window window)))))
 
 ;;;; Hiding a row that says nothing
 
@@ -325,7 +323,7 @@ stock look returns on the next redisplay."
   ;; Rows already drawn live in each window's `tab-line-cache', keyed on
   ;; nothing this package sets: without this, the old look stays until a
   ;; window's tabs change on their own.
-  (modern-tab-forget))
+  (modern-tab--mode-changed))
 
 (provide 'modern-tab-line)
 ;;; modern-tab-line.el ends here

@@ -1,98 +1,122 @@
 #+TITLE: How modern-tab is built
 #+OPTIONS: toc:nil
 
-Three files.  =modern-tab.el= holds what both modes draw with and is
+Three files. =modern-tab.el= holds what both modes draw with and is
 the main one; =modern-tab-bar.el= dresses the tab bar and
 =modern-tab-line.el= dresses the tab line.
 
 The package is =modern-tab=, after that main file, and every symbol
 carries the same prefix: package-lint takes the prefix from the main
 file, elpaca reads the version and the dependency line from the file
-the id names, and both are that one file.  The repository carries the
+the id names, and both are that one file. The repository carries the
 same name, so a recipe needs no =:repo= that differs from its id.
 
-There is no entry file.  Both modes are autoloaded, so a reader who
+There is no entry file. Both modes are autoloaded, so a reader who
 installs the package can name them in a hook without requiring
-anything.  A file whose only body is two =require= forms would earn
+anything. A file whose only body is two =require= forms would earn
 nothing.
 
 * The indicator
 
 The bar beside a tab is a PBM image of one colour, built once per
-height, width and colour and kept in a hash table.  Building one means
+height, width and colour and kept in a hash table. Building one means
 a fresh payload string and a spec the image cache then compares whole,
 and a row of tabs is built again on every command.
 
 A frame without images — a terminal, or one built without PBM — draws
-one column of =|= instead.  The face is only put on where a colour was
+one column of =|= instead. The face is only put on where a colour was
 given: a face attribute of nil is not "leave it alone", it is an error
 the display logs on every redisplay.
 
 Each mode names an option per state: a width and a colour for the
-selected tab, a width and a colour for the others.  The two modes name
+selected tab, a width and a colour for the others. The two modes name
 them the same way, so a reader who has set one knows how to set the
 other.
 
+The tabs themselves are one row and not a row of buttons. Every tab
+wears =tab-bar-tab=, and the weight alone says which one is current:
+the selected tab is bold and the rest are not. Left to the theme,
+=tab-bar-tab-inactive= brings a background and a foreground of its
+own — #c6c7c7 on #f0f0f0 under doom-one-light, a name barely there —
+and each tab reads as a button of its own shade. What
+=tab-bar-tab-face-function= answers with stands behind =tab-bar-tab=,
+for whatever that face leaves open.
+
 * Icons, and what a frame can draw
 
-=modern-tab-glyph= takes candidates, best first.  A graphic frame
+=modern-tab-glyph= takes candidates, best first. A graphic frame
 shows the first one as it is: which fonts draw a character — the face's
 own, or a fallback the fontset finds — is the frame's business.
 Refusing a fallback font would refuse the reader's =✕= and every nerd
-glyph with it.  The candidate list exists for terminals.
+glyph with it. The candidate list exists for terminals.
 
-A terminal has no font to ask.  =char-displayable-p= answers for the
+A terminal has no font to ask. =char-displayable-p= answers for the
 coding system there, and a UTF-8 terminal says yes to every character
-it can encode, box or not.  So a character of a Unicode private use
+it can encode, box or not. So a character of a Unicode private use
 area is refused on a terminal — that is where a nerd font keeps its
 glyphs, and no terminal font can be assumed to carry them — and the
 first candidate that passes whole wins, the last one being the answer
-where none does.  Every character is asked about, not the first one
+where none does. Every character is asked about, not the first one
 alone: the glyphs are padded with spaces, and a question about the
 first character was a question about a space.
 
-The buttons of the two rows are one family.  Every candidate list
+The buttons of the two rows are one family. Every candidate list
 leads with a codicon — the Nerd Fonts block from EA60 to EC84 — so the
 plus of the tab bar, the close button of both rows, the menu button
 and the mark on the selected tab are drawn at one weight and one
-visual size.  The other families do not match it: the material design
+visual size. The other families do not match it: the material design
 chevron is bold beside a codicon plus, and the octicon cross is half
-its size.  The close button of the two rows is the same glyph with the
+its size. The close button of the two rows is the same glyph with the
 padding each row needs, and the plain candidates behind the nerd glyph
 stay distinct from button to button, because a terminal takes the last
 of them.
 
 Finding a nerd icon walks the table of its style — 6880 entries for the
-material design one — so an answer is kept per key and per kind of
-display.  A terminal and a graphic frame answer differently and one
-session can hold both, which is why the kind of display is part of the
-key.  Every glyph is chosen at draw time and none at enable time: a
-daemon enables its modes with no frame at all, and one session can hold
-a terminal frame and a graphic frame together.  The table is emptied
-when a font arrives (=after-setting-font-hook=) and when an option an
-icon depends on is set; emptying it also clears the =tab-line-cache=
-parameter of every window, which is where a row already drawn is kept.
+material design one — so an answer is kept. =modern-tab--key= says
+what it is kept under: the spec itself, the kind of display, and
+=modern-tab-terminal-glyphs=. Those last two are what the spec does
+not say and the answer turns on; a terminal and a graphic frame answer
+differently and one session can hold both. Every glyph is chosen at
+draw time and none at enable time: a daemon enables its modes with no
+frame at all.
+
+Keying by the spec is what makes a changed option right without
+anything being emptied — a new value is a question with no answer yet.
+The table was keyed by a name each caller chose before, which meant a
+caller had to empty the table when its spec changed, and it cost a
+closure per call to keep the lookup out of a hit: measured, a button
+went from 2.0 µs a call to 0.5 in a graphic frame and from 2.0 to 0.46
+in a terminal, where walking the candidates afresh costs 11.
+
+=modern-tab-forget= empties the table all the same, and it is what a
+font arriving (=after-setting-font-hook=) and an option being set run.
+The font hook is there only while one of the two modes is on: each
+mode adds it as it goes on, and the last one to go off removes it.
+The emptying is no longer what makes them right; the redraw is. It
+also clears the =tab-line-cache= parameter of every window, which is
+where a row already drawn is kept, under a key that says nothing about
+the options of this package.
 
 * What a mode gives back
 
 Both modes set variables that belong to Emacs, and both put back what
-they found.  =modern-tab--borrow= keeps the value of each variable under
+they found. =modern-tab--borrow= keeps the value of each variable under
 the name of the mode before the mode sets it, and =modern-tab--give-back=
-writes those values back.  It keeps nothing for a mode that has
+writes those values back. It keeps nothing for a mode that has
 borrowed already: =define-minor-mode= runs its body on every call, and a
 mode enabled twice would otherwise record the values it set itself.
 
 The values are kept rather than worked out again.
-=custom-reevaluate-setting= cannot do this job, for two reasons.  A
+=custom-reevaluate-setting= cannot do this job, for two reasons. A
 plain =defvar= has no standard value for it to restore, so it sets the
 variable to nil: =tab-line-close-button= would come back as nothing
-and the stock tab line would lose its close button.  And it reads the
+and the stock tab line would lose its close button. And it reads the
 custom file, so a value the reader set with =setq= would be thrown
 away for whatever that file says.
 
-Neither mode sets a button of Emacs.  The tab bar draws its
+Neither mode sets a button of Emacs. The tab bar draws its
 own buttons from its format, and the tab line binds
-=tab-line-close-button= while it formats a tab.  A button settled at
+=tab-line-close-button= while it formats a tab. A button settled at
 enable time is settled for one kind of display, and a daemon enables
 its modes with no frame at all.
 
@@ -100,7 +124,7 @@ its modes with no frame at all.
 
 A row of tabs with a single tab on it says nothing and costs a line of
 every window, so a window showing one buffer gets =tab-line-format= of
-=none= as a window parameter.  The tabs of a window come from the two
+=none= as a window parameter. The tabs of a window come from the two
 buffer lists of that window, so three hooks keep the parameter current:
 
 - =window-buffer-change-functions=, for a window that shows another
@@ -111,19 +135,19 @@ buffer lists of that window, so three hooks keep the parameter current:
   windows that remember it.
 
 The last one is the only word of a killed buffer that no window shows:
-nothing about a window changes, so no window change function runs.  It
+nothing about a window changes, so no window change function runs. It
 runs before the buffer goes, which is why the count discounts the tab
 of the buffer that is going.
 
 A window is re-decided only where the hiding was this package's own.
 The =none= it sets leaves the =modern-tab-line-hide= parameter behind
 as the mark of its own, and a later decision touches a window only
-where the mark is there.  The =none= another package sets —
+where the mark is there. The =none= another package sets —
 =auto-side-windows= hides the side panels of a frame this way — is not
 undone, and a row stays off a panel that wanted it off.
 
 =buffer-list-update-hook= covers all three of those cases and is the
-wrong hook for them.  It runs on every =get-buffer-create=,
+wrong hook for them. It runs on every =get-buffer-create=,
 =set-buffer= and =kill-buffer= — about twice per buffer operation — and
 each run walks the buffer lists of a window for a count that has not
 changed.
@@ -135,15 +159,15 @@ hid no row.
 * The tab bar in a terminal
 
 A terminal paints the tab bar row in the redisplay that turns the bar
-on.  With a menu button in the format, a tab that changes before that
+on. With a menu button in the format, a tab that changes before that
 redisplay leaves the row blank for the rest of the session, and neither
-=force-mode-line-update= nor =redraw-display= brings it back.  Measured
-with Emacs 30.2, in tmux 3.7 and under pyte.  So the entry that draws
+=force-mode-line-update= nor =redraw-display= brings it back. Measured
+with Emacs 30.2, in tmux 3.7 and under pyte. So the entry that draws
 the menu button answers with nothing on a terminal; =M-`= reaches the
-menu there in any case.  The entry stays in the format and answers per
+menu there in any case. The entry stays in the format and answers per
 redisplay, so a daemon answers for each of its frames.
 
-The spacers are the same story.  A =space-width= display property
+The spacers are the same story. A =space-width= display property
 paints no part of a cell in a terminal, and one such item in the format
 leaves the whole row unpainted, still showing what stood in it before.
 So the spacers answer with nothing there too.
