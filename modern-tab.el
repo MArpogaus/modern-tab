@@ -319,11 +319,16 @@ its teardown must give nothing back and switch nothing off."
 
 ;;;; What a mode gives back when it is turned off
 
-;; The icons of a frame depend on the font it has, so a font arriving is
-;; a reason to forget them. On the hook of the file rather than of a
-;; mode: two modes read the same table, and either of them turning off
-;; used to take the hook away from the other.
-(add-hook 'after-setting-font-hook #'modern-tab-forget)
+(defun modern-tab--mode-changed ()
+  "Forget the icons, and watch the font while a mode of the package is on.
+Both modes call this as they go on or off.  The icons of a frame depend
+on its font, so a new font forgets them; the hook stays while either
+mode is on, because both read the same table."
+  (if (or (bound-and-true-p modern-tab-bar-mode)
+          (bound-and-true-p modern-tab-line-mode))
+      (add-hook 'after-setting-font-hook #'modern-tab-forget)
+    (remove-hook 'after-setting-font-hook #'modern-tab-forget))
+  (modern-tab-forget))
 
 (provide 'modern-tab)
 ;;; modern-tab.el ends here

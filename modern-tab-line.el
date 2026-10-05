@@ -323,7 +323,7 @@ stock look returns on the next redisplay."
   ;; Rows already drawn live in each window's `tab-line-cache', keyed on
   ;; nothing this package sets: without this, the old look stays until a
   ;; window's tabs change on their own.
-  (modern-tab-forget))
+  (modern-tab--mode-changed))
 
 (provide 'modern-tab-line)
 ;;; modern-tab-line.el ends here

@@ -343,7 +343,7 @@ on the next redisplay."
   (if modern-tab-bar-mode
       (modern-tab-bar--setup)
     (modern-tab-bar--teardown))
-  (modern-tab-forget))
+  (modern-tab--mode-changed))
 
 (provide 'modern-tab-bar)
 ;;; modern-tab-bar.el ends here

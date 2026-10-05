@@ -382,14 +382,22 @@ and no variable of the tab bar holds them."
                            tab-bar-tab-group-format-function)
                      was)))))
 
-(ert-deftest modern-tab-bar-test-the-font-hook-belongs-to-the-file ()
-  "Forgetting the icons on a new font is not one mode's business.
-Both modes read the same table, and either of them turning off used to
-take the hook away from the other."
-  (should (memq #'modern-tab-forget after-setting-font-hook))
-  (modern-tab-bar-mode 1)
-  (modern-tab-bar-mode -1)
-  (should (memq #'modern-tab-forget after-setting-font-hook)))
+(ert-deftest modern-tab-bar-test-the-font-hook-lives-while-a-mode-is-on ()
+  "Loading the package adds no hook; a mode adds it, the last one off removes it.
+Both modes read the same table, so one of them going off leaves the
+hook to the other."
+  (should-not (memq #'modern-tab-forget after-setting-font-hook))
+  (unwind-protect
+      (progn
+        (modern-tab-bar-mode 1)
+        (should (memq #'modern-tab-forget after-setting-font-hook))
+        (modern-tab-line-mode 1)
+        (modern-tab-bar-mode -1)
+        (should (memq #'modern-tab-forget after-setting-font-hook))
+        (modern-tab-line-mode -1)
+        (should-not (memq #'modern-tab-forget after-setting-font-hook)))
+    (modern-tab-bar-mode -1)
+    (modern-tab-line-mode -1)))
 
 (ert-deftest modern-tab-bar-test-a-group-with-no-name-is-not-an-error ()
   "`tab-bar-tab-group-format-function' can be called with a nil group.

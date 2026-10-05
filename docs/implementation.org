@@ -90,6 +90,8 @@ in a terminal, where walking the candidates afresh costs 11.
 
 =modern-tab-forget= empties the table all the same, and it is what a
 font arriving (=after-setting-font-hook=) and an option being set run.
+The font hook is there only while one of the two modes is on: each
+mode adds it as it goes on, and the last one to go off removes it.
 The emptying is no longer what makes them right; the redraw is. It
 also clears the =tab-line-cache= parameter of every window, which is
 where a row already drawn is kept, under a key that says nothing about
