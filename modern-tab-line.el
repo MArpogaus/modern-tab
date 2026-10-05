@@ -211,7 +211,9 @@ where none does."
     ;; The window goes only where its tab really went, and never the
     ;; sole window of a frame.
     (when (and last (not (buffer-live-p buffer)))
-      (ignore-errors (delete-window window)))))
+      ;; `t' and not `frame': the sole window of a frame stays.
+      (when (eq (window-deletable-p window) t)
+        (delete-window window)))))
 
 ;;;; Hiding a row that says nothing
 

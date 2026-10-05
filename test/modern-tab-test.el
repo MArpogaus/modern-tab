@@ -499,6 +499,27 @@ then carried a terminal's answer onto every graphic frame after it."
       ;; and the binding is undone, so nothing of the reader's is lost
       (should (equal tab-line-close-button "SETTLED")))))
 
+(ert-deftest modern-tab-line-test-the-last-tab-takes-its-window-only-where-it-can ()
+  "Closing the last tab deletes a window of a split, and keeps a sole one."
+  (skip-unless (> (window-body-height) 6))
+  (delete-other-windows)
+  (let ((sole (selected-window))
+        (one (generate-new-buffer "modern-tab-line-test-sole")))
+    (set-window-buffer sole one)
+    (set-window-prev-buffers sole nil)
+    (set-window-next-buffers sole nil)
+    (modern-tab-line-close-tab one)
+    (should (window-live-p sole))
+    (let* ((other (split-window))
+           (two (generate-new-buffer "modern-tab-line-test-split")))
+      (select-window other)
+      (set-window-buffer other two)
+      (set-window-prev-buffers other nil)
+      (set-window-next-buffers other nil)
+      (modern-tab-line-close-tab two)
+      (should-not (window-live-p other))
+      (should (window-live-p sole)))))
+
 (ert-deftest modern-tab-line-test-closing-a-tab-kills-the-buffer ()
   "A buffer no other window shows is killed when its tab closes."
   (let ((buffer (generate-new-buffer "modern-tab-line-test")))
