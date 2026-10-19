@@ -209,8 +209,9 @@ where none does."
            window (delq buffer (window-next-buffers window))))
       (kill-buffer buffer))
     ;; The window goes only where its tab really went, and never the
-    ;; sole window of a frame.
-    (when (and last (not (buffer-live-p buffer)))
+    ;; sole window of a frame.  Killing the buffer may have taken a
+    ;; window made for it already.
+    (when (and last (window-live-p window) (not (buffer-live-p buffer)))
       ;; `t' and not `frame': the sole window of a frame stays.
       (when (eq (window-deletable-p window) t)
         (delete-window window)))))
