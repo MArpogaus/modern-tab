@@ -20,6 +20,9 @@
 (require 'modern-tab-bar)
 (require 'modern-tab-line)
 
+;; Emacs 31; declared so the `let' in a test binds it dynamically before.
+(defvar kill-buffer-quit-windows)
+
 ;;;; The bar
 
 (ert-deftest modern-tab-test-a-bar-of-no-width-is-nothing ()
