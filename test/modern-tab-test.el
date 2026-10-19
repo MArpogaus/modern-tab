@@ -528,6 +528,24 @@ then carried a terminal's answer onto every graphic frame after it."
       (should-not (window-live-p other))
       (should (window-live-p sole)))))
 
+(ert-deftest modern-tab-line-test-a-window-made-for-the-buffer-goes-with-it ()
+  "Closing the tab of a buffer shown in a window made for it signals nothing.
+With `kill-buffer-quit-windows', killing the buffer deletes that window
+through `quit-restore-window' before the close asks about it; an Org
+agenda opens its files in such a window."
+  (skip-unless (> (window-body-height) 6))
+  (delete-other-windows)
+  (let* ((kill-buffer-quit-windows t)
+         (sole (selected-window))
+         (buffer (generate-new-buffer "modern-tab-line-test-made"))
+         (made (display-buffer buffer '(display-buffer-pop-up-window))))
+    (should (window-live-p made))
+    (select-window made)
+    (modern-tab-line-close-tab buffer)
+    (should-not (buffer-live-p buffer))
+    (should-not (window-live-p made))
+    (should (window-live-p sole))))
+
 (ert-deftest modern-tab-line-test-closing-a-tab-kills-the-buffer ()
   "A buffer no other window shows is killed when its tab closes."
   (let ((buffer (generate-new-buffer "modern-tab-line-test")))
